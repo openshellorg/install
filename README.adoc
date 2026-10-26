@@ -1,0 +1,40 @@
+ifndef::env-github[:icons: font]
+:toc: preamble
+:toclevels: 2
+:sectanchors:
+
+image:https://img.shields.io/github/contributors/openshellorg/install.svg?style=for-the-badge[Contributors,link=https://github.com/openshellorg/install/graphs/contributors]
+image:https://img.shields.io/github/stars/openshellorg/install.svg?style=for-the-badge[Stars,link=https://github.com/openshellorg/install/stargazers]
+image:https://img.shields.io/github/issues/openshellorg/install.svg?style=for-the-badge[Issues,link=https://github.com/openshellorg/install/issues]
+image:https://img.shields.io/github/license/openshellorg/install.svg?style=for-the-badge[License,link=https://github.com/openshellorg/install/blob/main/LICENSE]
+
+= install
+
+Resolver-style `install` front door across package managers. Resolves, explains and asks; never guesses silently.
+
+link:https://github.com/openshellorg/install/issues[Report Bug] |
+link:https://github.com/openshellorg/install/issues[Request Feature] |
+link:https://docs.opensh.org/tools/install/index.html[Explore the docs]
+
+== About The Project
+
+Part of the OpenShellOrg command-namespace work: the shell finds commands in a hierarchical, task-shaped namespace instead of searching `PATH`.
+Design seed: link:https://github.com/openshellorg/project-plans/blob/main/seeds/2026-10-26%20-%20install-resolver-cli.md[project-plans seed]. Concept page: link:https://docs.opensh.org/open-shell-org/concept-command-namespace.html[Command namespace and context requests].
+
+Status: scaffold only.
+
+== Related
+
+* https://github.com/openshellorg/command-namespace[command-namespace] - spec, schemas, registry library
+* https://github.com/openshellorg/ns[ns] - inspection and audit
+* https://github.com/openshellorg/install[install] - resolver front door
+* https://github.com/openshellorg/versions[versions] - version manager
+* https://github.com/openshellorg/isolate[isolate] - isolation levels front door
+
+== License
+
+MIT - see link:LICENSE[].
+
+== Contact
+
+Open Shell Org - openshell@devcentr.org

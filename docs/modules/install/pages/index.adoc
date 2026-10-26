@@ -1,0 +1,10 @@
+= install
+:description: Resolver-style `install` front door across package managers. Resolves, explains and asks; never guesses silently.
+:page-orig-author: Grok Bot on behalf of Ryan Johnson
+:page-orig-author-github: AMDphreak
+
+Resolver-style `install` front door across package managers. Resolves, explains and asks; never guesses silently.
+
+Status: scaffold only.
+
+Design seed: link:https://github.com/openshellorg/project-plans/blob/main/seeds/2026-10-26%20-%20install-resolver-cli.md[project-plans]. Concept: xref:open-shell-org::concept-command-namespace.adoc[Command namespace and context requests].
