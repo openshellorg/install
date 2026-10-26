@@ -23,10 +23,29 @@ Design seed: link:https://github.com/openshellorg/project-plans/blob/main/seeds/
 
 Status: scaffold only.
 
+== Usage
+
+v0 is *read-only*: it searches and never installs.
+
+[source,shell]
+----
+osh-install                          # help
+osh-install search ripgrep           # winget, scoop and npm
+osh-install search ripgrep --manager winget,npm
+osh-install --json search ripgrep
+osh-install managers                 # which managers were found
+----
+
+The binary is `osh-install` because coreutils already has an `install` command (PROVISIONAL; see the command-namespace design decisions). In the command namespace it is the `install` verb.
+
+Exit codes: 0 results found, 1 no results, 2 usage error. A manager that isn't installed is skipped and reported.
+
+Build and test with LDC + dub: `dub test`, `dub build`.
+
 == Related
 
 * https://github.com/openshellorg/command-namespace[command-namespace] - spec, schemas, registry library
-* https://github.com/openshellorg/ns[ns] - inspection and audit
+* https://github.com/openshellorg/name[name] - inspection and audit (`name which`, `name conflicts`)
 * https://github.com/openshellorg/install[install] - resolver front door
 * https://github.com/openshellorg/versions[versions] - version manager
 * https://github.com/openshellorg/isolate[isolate] - isolation levels front door

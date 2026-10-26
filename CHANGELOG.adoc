@@ -2,4 +2,5 @@
 
 == Unreleased
 
+* Read-only resolver `osh-install search <query>` across winget, scoop and npm (search only, never installs), `osh-install managers`, `--manager`, `--json`. CLI Dispatch conformant. Unit tests use a fake runner.
 * Initial scaffold: README, MIT license, Antora component `tools` module `install`, encoding guard. Seed: https://github.com/openshellorg/project-plans/blob/main/seeds/2026-10-26%20-%20install-resolver-cli.md
