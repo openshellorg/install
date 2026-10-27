@@ -11,4 +11,5 @@ __dummy.html
 /install-test-*
 *-test-library*
 *-test-application*
-/osh-install
+/install
+/install.exe

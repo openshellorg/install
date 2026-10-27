@@ -2,5 +2,6 @@
 
 == Unreleased
 
-* Read-only resolver `osh-install search <query>` across winget, scoop and npm (search only, never installs), `osh-install managers`, `--manager`, `--json`. CLI Dispatch conformant. Unit tests use a fake runner.
+* The command is now literally `install` (was `osh-install`); DECIDED. PROVISIONAL install(1) passthrough: install(1)-style arguments (`-m`, `-D`, `-d`, `-o`, `-g`, or an existing file plus a destination) are handed to legacy/install from a fixed system path, so `make install` scripts keep working. Documented coexistence with coreutils/BSD install(1).
+* Read-only resolver `install search <query>` across winget, scoop and npm (search only, never installs), `install managers`, `--manager`, `--json`. CLI Dispatch conformant. Unit tests use a fake runner.
 * Initial scaffold: README, MIT license, Antora component `tools` module `install`, encoding guard. Seed: https://github.com/openshellorg/project-plans/blob/main/seeds/2026-10-26%20-%20install-resolver-cli.md

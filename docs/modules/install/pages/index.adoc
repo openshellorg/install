@@ -8,3 +8,14 @@ Resolver-style `install` front door across package managers. Resolves, explains 
 Status: scaffold only.
 
 Design seed: link:https://github.com/openshellorg/project-plans/blob/main/seeds/2026-10-26%20-%20install-resolver-cli.md[project-plans]. Concept: xref:open-shell-org::concept-command-namespace.adoc[Command namespace and context requests].
+
+== Command name and install(1)
+
+The command is literally `install` (DECIDED): "I wanted the command to literally be 'install' not 'osh-install' otherwise it breaks the illusion of a seamless unified interface." (Ryan Johnson, 2026-10-26)
+
+* In a namespace shell, `install` is the root `install` node and coreutils/BSD `install(1)` is registered at `legacy/install`, so `install` resolves to the resolver.
+* In a plain PATH shell on Unix, packaging must not overwrite `/usr/bin/install`. Put the resolver ahead on your own PATH only, or use a shell alias or function.
+* Build scripts that call `install(1)` with `-m`, `-D`, `-d`, `-o`, `-g` and similar flags must keep working. The resolver hands install(1)-style arguments (any install(1) option, or an existing source file plus a destination) unchanged to the real install(1) from a fixed system path. PROVISIONAL.
+* Windows has no `install` command, so there is no clash.
+
+Bare `install` prints help and guidance.

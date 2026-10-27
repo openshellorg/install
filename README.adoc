@@ -29,14 +29,21 @@ v0 is *read-only*: it searches and never installs.
 
 [source,shell]
 ----
-osh-install                          # help
-osh-install search ripgrep           # winget, scoop and npm
-osh-install search ripgrep --manager winget,npm
-osh-install --json search ripgrep
-osh-install managers                 # which managers were found
+install                              # help
+install search ripgrep               # winget, scoop and npm
+install search ripgrep --manager winget,npm
+install --json search ripgrep
+install managers                     # which managers were found
 ----
 
-The binary is `osh-install` because coreutils already has an `install` command (PROVISIONAL; see the command-namespace design decisions). In the command namespace it is the `install` verb.
+The command is literally `install` (DECIDED). Ryan's rationale: "I wanted the command to literally be 'install' not 'osh-install' otherwise it breaks the illusion of a seamless unified interface."
+
+=== Coexisting with install(1)
+
+* *Namespace shells:* `install` is the root `install` node, and coreutils/BSD `install(1)` is registered at `legacy/install`. `install` resolves to the resolver.
+* *Plain PATH shells (Unix):* `install(1)` already exists. Packaging must never overwrite `/usr/bin/install`. Put the resolver ahead of it on your own PATH only (for example `~/.local/bin`), or use a shell alias or function. Don't change the system PATH.
+* *Build scripts:* scripts call `install(1)` with its file-copy flags (`-m`, `-D`, `-d`, `-o`, `-g`, ...), and they must keep working. The resolver detects install(1)-style arguments (any install(1) option, or an existing source file followed by a destination) and hands them unchanged to the real install(1) from a fixed system location (`/usr/bin/install`, `/bin/install`, or Homebrew `ginstall`), never by searching PATH. Its exit status comes back unchanged. This passthrough is PROVISIONAL. Resolver commands (`search`, `managers`, `help`) and flags always win.
+* *Windows:* there is no `install` command, so there is no clash. install(1)-style arguments there are a usage error (exit 2).
 
 Exit codes: 0 results found, 1 no results, 2 usage error. A manager that isn't installed is skipped and reported.
 

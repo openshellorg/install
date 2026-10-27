@@ -1,4 +1,4 @@
-/// `osh-install` command line (the `install` verb in the namespace). v0 is read-only: search only.
+/// `install` command line: the root `install` node of the command namespace. v0 is read-only: search only.
 /// CLI Dispatch: bare = help (exit 0); unknown command/flag = exit 2 with did-you-mean; stray args = exit 2.
 module install_tool.cli;
 
@@ -9,14 +9,15 @@ import std.format : format;
 import std.json;
 import std.stdio : File;
 import install_tool.managers;
+import install_tool.passthrough;
 
 enum installVersion = "0.1.0";
 immutable string[] commands = ["search", "managers", "help"];
 
-private enum helpText = `osh-install - find a package across package managers (read-only)
+private enum helpText = `install - find a package across package managers (read-only)
 
 Usage:
-  osh-install <command> [options]
+  install <command> [options]
 
 Commands:
   search <query>   Search winget, scoop and npm for <query>
@@ -30,8 +31,9 @@ Options:
   --version        Show version
 
 This version never installs anything. It only runs each manager's search.
-In the command namespace this is the 'install' verb; 'osh-install' is the
-name for shells that still use PATH (coreutils already has 'install').
+install(1) file-copy arguments (for example 'install -m 755 app /usr/local/bin',
+or an existing file followed by a destination) are handed to legacy/install
+unchanged, so build scripts keep working. (PROVISIONAL)
 Exit codes: 0 results found, 1 no results, 2 usage error.
 `;
 
@@ -49,16 +51,26 @@ private string[] didYouMean(string w, const(string)[] opts)
 
 private int usage(Sink err, string msg, string[] hints = null, string extra = null)
 {
-    err.put("osh-install: " ~ msg ~ "\n");
+    err.put("install: " ~ msg ~ "\n");
     if (hints.length) err.put("Did you mean: " ~ hints.join(", ") ~ "?\n");
     if (extra.length) err.put(extra ~ "\n");
-    err.put("Run 'osh-install --help' for usage.\n");
+    err.put("Run 'install --help' for usage.\n");
     return 2;
 }
 
-int run(string[] args, Sink out_, Sink err, Runner runner)
+int run(string[] args, Sink out_, Sink err, Runner runner, Passthrough pt = null)
 {
     if (args.length == 0) { out_.put(helpText); return 0; }
+
+    // PROVISIONAL install(1) passthrough. Our own commands and flags always win.
+    if (pt !is null && !commands.canFind(args[0]) && !["-h", "--help", "--version", "--json", "--manager"].canFind(args[0])
+        && !args[0].startsWith("--manager=") && looksLikeInstall1(args, (string p) => pt.isFile(p)))
+    {
+        auto legacy = pt.legacyInstall();
+        if (legacy is null)
+            return usage(err, "these look like install(1) file-copy arguments, but no legacy/install (coreutils or BSD install) was found");
+        return pt.exec(legacy, args);
+    }
 
     bool json;
     string[] managers;
@@ -99,7 +111,7 @@ int run(string[] args, Sink out_, Sink err, Runner runner)
     if (cmd == "--version")
     {
         if (params.length) return usage(err, "'--version' takes no arguments");
-        out_.put("osh-install " ~ installVersion ~ "\n");
+        out_.put("install " ~ installVersion ~ "\n");
         return 0;
     }
     if (cmd.startsWith("-"))
@@ -118,7 +130,7 @@ int run(string[] args, Sink out_, Sink err, Runner runner)
             if (params.length) return usage(err, format("'managers' takes no arguments, got: %s", params.join(" ")));
             return cmdManagers(runner, json, out_);
         case "search":
-            if (params.length == 0) return usage(err, "'search' needs a query: osh-install search <query>");
+            if (params.length == 0) return usage(err, "'search' needs a query: install search <query>");
             if (params.length > 1) return usage(err, format("'search' takes one query, got %s: %s", params.length, params.join(" ")));
             if (!isSafeQuery(params[0]))
                 return usage(err, format("'%s' is not a package name (letters, digits and @/._+- only)", params[0]));
@@ -127,7 +139,7 @@ int run(string[] args, Sink out_, Sink err, Runner runner)
             auto hints = didYouMean(cmd, commands);
             string extra;
             if (hints.length == 0 && isSafeQuery(cmd))
-                extra = format("Installing is not available yet (read-only v0). To look it up: osh-install search %s", cmd);
+                extra = format("Installing is not available yet (read-only v0). To look it up: install search %s", cmd);
             return usage(err, format("unknown command '%s'", cmd), hints, extra);
     }
 }
@@ -179,7 +191,7 @@ int cmdSearch(Runner r, string query, string[] managers, bool json, Sink out_, S
         foreach (h; o.hits)
             out_.put(format("  %-40s %-12s %s\n", h.id, h.version_, h.name != h.id ? h.name : h.summary.length > 60 ? h.summary[0 .. 57] ~ "..." : h.summary));
     }
-    if (total == 0) err.put(format("osh-install: no package matching '%s' in %s\n", query, managers.join(", ")));
+    if (total == 0) err.put(format("install: no package matching '%s' in %s\n", query, managers.join(", ")));
     else out_.put(format("%s result(s) for '%s'. Nothing was installed.\n", total, query));
     return total ? 0 : 1;
 }
@@ -213,7 +225,7 @@ unittest
     assert(t(["--version"], o, e) == 0 && o.canFind(installVersion));
     // unknown command / flag -> 2 with did-you-mean
     assert(t(["serch", "x"], o, e) == 2 && e.canFind("Did you mean: search?"));
-    assert(t(["ripgrep"], o, e) == 2 && e.canFind("read-only v0") && e.canFind("osh-install search ripgrep"));
+    assert(t(["ripgrep"], o, e) == 2 && e.canFind("read-only v0") && e.canFind("install search ripgrep"));
     assert(t(["--jsno"], o, e) == 2 && e.canFind("--json"));
     assert(t(["search", "x", "--force"], o, e) == 2);
     assert(t(["search", "x", "--manager", "wingit"], o, e) == 2 && e.canFind("winget"));
@@ -223,6 +235,43 @@ unittest
     assert(t(["search", "a", "b"], o, e) == 2);
     assert(t(["managers", "x"], o, e) == 2);
     assert(t(["search", "a&calc"], o, e) == 2);
+    assert(e.canFind("install: ") && e.canFind("Run 'install --help'"));
+}
+
+version (unittest)
+{
+    final class FakePT : Passthrough
+    {
+        string legacy = "/usr/bin/install";
+        string[] ran;
+        bool isFile(string p) { return p == "app"; }
+        string legacyInstall() { return legacy; }
+        int exec(string path, string[] args) { ran = [path] ~ args; return 0; }
+    }
+}
+
+unittest
+{
+    auto pt = new FakePT;
+    auto so = new BufSink, se = new BufSink;
+    auto f = fake();
+    // install(1) forms go to legacy/install unchanged
+    assert(run(["-m", "755", "app", "/usr/local/bin"], so, se, f, pt) == 0);
+    assert(pt.ran == ["/usr/bin/install", "-m", "755", "app", "/usr/local/bin"]);
+    pt.ran = null;
+    assert(run(["app", "/tmp/app"], so, se, f, pt) == 0 && pt.ran.length == 3);
+    pt.ran = null;
+    assert(run(["-d", "/tmp/x"], so, se, f, pt) == 0 && pt.ran[1] == "-d");
+    // resolver forms never pass through
+    pt.ran = null;
+    assert(run([], so, se, f, pt) == 0 && so.data.canFind("Usage:"));
+    assert(run(["search", "rg"], so, se, f, pt) == 0 && pt.ran is null);
+    assert(run(["--help"], so, se, f, pt) == 0 && pt.ran is null);
+    assert(run(["ripgrep"], so, se, f, pt) == 2 && pt.ran is null);
+    assert(f.calls.length == 0 || f.calls[0][1] == "search");
+    // no legacy install (Windows): usage error, nothing run
+    pt.legacy = null;
+    assert(run(["-m", "755", "app", "/x"], so, se, f, pt) == 2 && pt.ran is null && se.data.canFind("no legacy/install"));
 }
 
 unittest
