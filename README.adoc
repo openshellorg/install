@@ -1,5 +1,6 @@
 ifndef::env-github[:icons: font]
-:toc: preamble
+:toc: macro
+:toc-title:
 :toclevels: 2
 :sectanchors:
 
@@ -15,6 +16,15 @@ Resolver-style `install` front door across package managers. Resolves, explains 
 link:https://github.com/openshellorg/install/issues[Report Bug] |
 link:https://github.com/openshellorg/install/issues[Request Feature] |
 link:https://docs.opensh.org/tools/install/index.html[Explore the docs]
+
+++++
+<details>
+<summary>Table of Contents</summary>
+++++
+toc::[]
+++++
+</details>
+++++
 
 == About The Project
 
